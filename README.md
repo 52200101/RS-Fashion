@@ -4,7 +4,7 @@ Dự án nghiên cứu và triển khai các mô hình Graph-based Collaborative
 
 Dự án này triển khai ba mô hình học sâu phổ biến cho bài toán Collaborative Filtering
 
-- **NGCF** - Mô hình học embedding người dùng và sản phẩm bằng cách lan truyền và kết hợp thông tin láng giềng trên đồ thị User–Item thông qua các phép biến đổi phi tuyến.
+- **NGCF** - Mô hình học embedding người dùng và sản phẩm bằng cách lan truyền và kết hợp thông tin lân cận trên đồ thị User–Item thông qua các phép biến đổi phi tuyến.
 - **LightGCN** -Phiên bản đơn giản hóa của NGCF, loại bỏ activation và transformation, chỉ giữ lại quá trình lan truyền embedding trên đồ thị để đạt hiệu quả cao và huấn luyện nhanh hơn.
 - **ALS** - Phương pháp Collaborative Filtering truyền thống dựa trên phân rã ma trận User–Item, được sử dụng làm baseline để so sánh với các mô hình Graph-based.
 
@@ -72,5 +72,108 @@ ALS phân rã ma trận tương tác User–Item thành hai embedding thấp chi
 -Tối ưu luân phiên embedding user và item
 -Dễ cài đặt, ổn định
 -Được dùng làm baseline so sánh
-**Công thức:**
 
+
+### 4. Content-Based Filtering (CBF)
+Content-Based Filtering gợi ý sản phẩm dựa trên **độ tương đồng nội dung** giữa các item mà user đã tương tác và các item còn lại.
+
+**Đặc điểm:**
+- Không phụ thuộc vào hành vi của user khác
+- Sử dụng đặc trưng nội dung của item (ví dụ: category, tag, description)
+- Giải quyết tốt bài toán cold-start cho item mới
+- Được dùng để bổ sung cho Collaborative Filtering
+
+---
+
+### 5. Ensemble
+Ensemble kết hợp kết quả từ nhiều mô hình khác nhau (NGCF, LightGCN, ALS, CBF) để tạo ra danh sách gợi ý cuối cùng.
+
+**Đặc điểm:**
+- Kết hợp điểm dự đoán từ nhiều mô hình
+- Giảm bias của từng mô hình đơn lẻ
+- Cải thiện độ ổn định và chất lượng gợi ý
+
+**Cách thực hiện:**
+- Chuẩn hóa score của từng mô hình
+- Kết hợp bằng trung bình có trọng số hoặc cộng tuyến tính
+- Sắp xếp lại item theo score tổng
+
+---
+
+## Cài Đặt
+
+### Yêu Cầu Hệ Thống
+- Python 3.8+
+- CUDA (tùy chọn, để sử dụng GPU)
+
+### Cài Đặt Thư Viện
+
+```bash
+pip install -r requirements.txt
+```
+
+Thư viện chính:
+- `torch` -xây dựng và load model NGCF, LightGCN, ALS
+- `numpy` - Xử lý mảng số
+- `scikit-learn` - metric hỗ trợ
+
+## Tối Ưu Siêu Tham Số
+
+Các mô hình đã được tối ưu siêu tham số trước khi đánh giá, bao gồm:
+- Embedding size
+- Số tầng (layers)
+- Learning rate
+- Batch size
+- Regularization
+
+Cấu hình tốt nhất được chọn dựa trên kết quả trên tập validation.
+
+---
+
+## Kiến Trúc Kỹ Thuật
+
+Hệ thống gợi ý được xây dựng theo kiến trúc offline, gồm các bước chính sau:
+
+### 1. Xử lý dữ liệu
+- Dữ liệu tương tác User–Item được tiền xử lý và lưu trong thư mục `data/processed`
+- Tách dữ liệu thành tập train và test
+- Lọc user và item có số tương tác quá ít (filter data)
+
+---
+
+### 2. Huấn luyện mô hình
+- Xây dựng đồ thị User–Item bằng `graph.py`
+- Huấn luyện các mô hình:
+  - NGCF
+  - LightGCN
+  - ALS
+- Các mô hình được train trên Kaggle và lưu lại dưới dạng `.pt` trong `saved_models`
+
+---
+
+### 3. Content-Based Filtering
+- Trích xuất đặc trưng nội dung của item (category, tag, metadata)
+- Tính độ tương đồng giữa các item bằng cosine similarity
+- Sinh danh sách gợi ý dựa trên lịch sử tương tác của user
+
+---
+
+### 4. Ensemble
+- Load kết quả dự đoán từ các mô hình:
+  - Graph-based CF (NGCF, LightGCN)
+  - ALS
+  - Content-Based Filtering
+- Chuẩn hóa score của từng mô hình
+- Kết hợp score bằng trung bình hoặc trung bình có trọng số
+- Sinh danh sách gợi ý cuối cùng cho mỗi user
+
+---
+
+### 5. Đánh giá mô hình
+- So sánh danh sách gợi ý với tập test
+- Tính các metric:
+  - Precision@K
+  - Recall@K
+  - NDCG@K
+  - HitRate@K
+- Thực hiện đánh giá bằng `demo.py
