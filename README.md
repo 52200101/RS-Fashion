@@ -176,4 +176,4 @@ Hệ thống gợi ý được xây dựng theo kiến trúc offline, gồm các
   - Recall@K
   - NDCG@K
   - HitRate@K
-- Thực hiện đánh giá bằng `demo.py
+- Thực hiện đánh giá bằng 'demo.py'
