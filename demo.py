@@ -7,7 +7,7 @@ import numpy as np
 # CONFIG
 # ========================
 DEVICE = "cpu"
-MODE = "full"   # "full" | "filter"
+MODE = "filter"   # "full" | "filter"
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # ========================

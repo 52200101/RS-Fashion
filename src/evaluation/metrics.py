@@ -26,11 +26,6 @@ def evaluate_embeddings(user_emb, item_emb, user_train_items, user_test_items, k
             U[u].unsqueeze(0).numpy(), I_np
         )[0]
 
-        # # mask train items
-        # train_items = set(user_train_items.get(u, []))
-        # if train_items:
-        #     scores[list(train_items)] = -1e9
-
         top_k = np.argsort(-scores)[:k]
         hits = len(set(top_k) & test_items)
 
